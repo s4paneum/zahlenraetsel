@@ -27,8 +27,6 @@ public class Riddle {
     }
 
     void brute_force_riddle(String[][] riddle){
-        System.out.println("brute force solving:");
-
         // create mapping
         HashMap<Character, Integer> mapping = new HashMap<>();
         mapping.put('A', 0);

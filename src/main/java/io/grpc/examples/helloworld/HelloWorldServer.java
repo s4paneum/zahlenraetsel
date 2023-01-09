@@ -89,7 +89,16 @@ public class HelloWorldServer {
 
     @Override
     public void requestRiddle(RiddleRequest req, StreamObserver<RiddleReply> responseObserver) {
+      System.out.println("Riddle requested:");
+      System.out.println("----------------");
       Riddle riddle = new Riddle();
+      System.out.println("Mapping: " + riddle.mapping);
+      System.out.println("");
+      System.out.println(riddle.matrixToString());
+      System.out.println("------");
+      System.out.println(riddle.riddleToString());
+      System.out.println("send Riddle.");
+      System.out.println("----------------");
       RiddleReply reply = RiddleReply.newBuilder().setMessage(riddle.riddleToString()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
@@ -100,7 +109,12 @@ public class HelloWorldServer {
       String riddleString = req.getName();
       Riddle riddle = new Riddle();
       riddle.stringToRiddle(riddleString);
+      System.out.println(riddleString);
+      System.out.println("brute force solving...");
       riddle.brute_force_riddle(riddle.encodedMatrix);
+      System.out.println(riddle.decodeRiddle());
+      System.out.println("--------------");
+
       SolveReply reply = SolveReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
