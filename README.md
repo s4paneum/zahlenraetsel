@@ -4,7 +4,7 @@
 
 
 Client Command List:
-!help
-!requestRiddle
-!showRiddle
-!solveRiddle
+- !help
+- !requestRiddle
+- !showRiddle
+- !solveRiddle
