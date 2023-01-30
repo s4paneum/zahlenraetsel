@@ -26,6 +26,7 @@ service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply) {}
   rpc RequestRiddle (RiddleRequest) returns (RiddleReply) {}
   rpc SolveRiddle (SolveRequest) returns (SolveReply) {}
+  rpc BruteRiddle (BruteRequest) returns (BruteReply) {}
 }
 
 // The request message containing the user's name.
@@ -51,5 +52,13 @@ message SolveRequest {
 }
 
 message SolveReply {
+  string message = 1;
+}
+
+message BruteRequest {
+  string name = 1;
+}
+
+message BruteReply {
   string message = 1;
 }

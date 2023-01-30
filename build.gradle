@@ -29,6 +29,17 @@ def protocVersion = protobufVersion
 dependencies {
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation 'org.json:json:20220924'
+    // https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+    // https://mvnrepository.com/artifact/javax.inject/javax.inject
+    implementation group: 'javax.inject', name: 'javax.inject', version: '1'
+    // https://mvnrepository.com/artifact/org.apache.camel/camel-core
+    implementation group: 'org.apache.camel', name: 'camel-core', version: '3.20.1'
+
+
+
     compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 
     // examples/advanced need this for JsonFormat
@@ -65,14 +76,21 @@ startScripts.enabled = false
 
 task helloWorldServer(type: CreateStartScripts) {
     mainClass = 'io.grpc.examples.helloworld.HelloWorldServer'
-    applicationName = 'hello-world-server'
+    applicationName = 'riddle-server'
     outputDir = new File(project.buildDir, 'tmp/scripts/' + name)
     classpath = startScripts.classpath
 }
 
 task helloWorldClient(type: CreateStartScripts) {
     mainClass = 'io.grpc.examples.helloworld.HelloWorldClient'
-    applicationName = 'hello-world-client'
+    applicationName = 'riddle-client'
+    outputDir = new File(project.buildDir, 'tmp/scripts/' + name)
+    classpath = startScripts.classpath
+}
+
+task CamelClient(type: CreateStartScripts) {
+    mainClass = 'io.grpc.examples.helloworld.CamelClient'
+    applicationName = 'camel-client'
     outputDir = new File(project.buildDir, 'tmp/scripts/' + name)
     classpath = startScripts.classpath
 }
@@ -81,6 +99,7 @@ task helloWorldClient(type: CreateStartScripts) {
 applicationDistribution.into('bin') {
     from(helloWorldServer)
     from(helloWorldClient)
+    from(CamelClient)
 
     fileMode = 0755
 }

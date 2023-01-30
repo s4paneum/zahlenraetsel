@@ -19,7 +19,10 @@ package io.grpc.examples.helloworld;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+
+import javax.inject.Inject;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -30,6 +33,8 @@ public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
 
   private Server server;
+  public static HashMap<Integer, Riddle> riddles = new HashMap<Integer, Riddle>();
+  public static String server_id = "Biggus Dickus";
 
   private void start() throws IOException {
     /* The port on which the server should run */
@@ -80,6 +85,8 @@ public class HelloWorldServer {
 
   static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
 
+    int counter = 0;
+
     @Override
     public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
       HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
@@ -91,7 +98,9 @@ public class HelloWorldServer {
     public void requestRiddle(RiddleRequest req, StreamObserver<RiddleReply> responseObserver) {
       System.out.println("Riddle requested:");
       System.out.println("----------------");
-      Riddle riddle = new Riddle();
+      Riddle riddle = new Riddle(server_id, counter);
+      riddles.put(counter, riddle);
+      counter++;
       System.out.println("Mapping: " + riddle.mapping);
       System.out.println("");
       System.out.println(riddle.matrixToString());
@@ -99,7 +108,7 @@ public class HelloWorldServer {
       System.out.println(riddle.riddleToString());
       System.out.println("send Riddle.");
       System.out.println("----------------");
-      RiddleReply reply = RiddleReply.newBuilder().setMessage(riddle.riddleToString()).build();
+      RiddleReply reply = RiddleReply.newBuilder().setMessage(riddle.encodedRiddleToDataString()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }
@@ -107,7 +116,40 @@ public class HelloWorldServer {
     @Override
     public void solveRiddle(SolveRequest req, StreamObserver<SolveReply> responseObserver) {
       String riddleString = req.getName();
-      Riddle riddle = new Riddle();
+
+      Riddle riddle = new Riddle(server_id, 0);
+      riddle.stringToRiddle(riddleString);
+
+      String output = "";
+
+
+      // riddle exist in list
+      if (riddles.get(riddle.id) != null){
+        Riddle r = riddles.get(riddle.id);
+        r.counter++;
+        output = String.valueOf(r.counter);
+//        riddles.put(counter, r);
+      }
+      // no riddle found in list -> put it in list
+      else {
+        riddle.id = counter;
+        riddles.put(counter, riddle);
+        counter++;
+        output = String.valueOf(riddle.counter);
+      }
+
+      System.out.println("solving riddle...");
+
+      SolveReply reply = SolveReply.newBuilder().setMessage(output).build();
+      responseObserver.onNext(reply);
+      responseObserver.onCompleted();
+    }
+
+    @Override
+    public void bruteRiddle(BruteRequest req, StreamObserver<BruteReply> responseObserver) {
+      String riddleString = req.getName();
+      Riddle riddle = new Riddle(server_id, counter);
+      counter++;
       riddle.stringToRiddle(riddleString);
       System.out.println(riddleString);
       System.out.println("brute force solving...");
@@ -115,7 +157,7 @@ public class HelloWorldServer {
       System.out.println(riddle.decodeRiddle());
       System.out.println("--------------");
 
-      SolveReply reply = SolveReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
+      BruteReply reply = BruteReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }

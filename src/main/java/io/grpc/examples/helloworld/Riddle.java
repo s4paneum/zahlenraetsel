@@ -1,5 +1,9 @@
 package io.grpc.examples.helloworld;
 
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -9,14 +13,20 @@ public class Riddle {
     int[][] matrix;
     String[][] encodedMatrix;
     int pow = 3;
+    public int counter = 0;
+    public int id;
+    public String server_id;
 
-    Riddle(){
+    Riddle(String server_id, int id){
+        this.server_id = server_id;
+        this.id = id;
         mapping = generateMapping();
         //System.out.println(mapping);
         matrix = generateRiddle();
         //System.out.println(matrixToString());
         encodedMatrix = encodeRiddle(mapping);
         //System.out.println(riddleToString());
+
     }
 
     Riddle(int pow){
@@ -24,6 +34,11 @@ public class Riddle {
             this.pow = pow;
         mapping = generateMapping();
         System.out.println(mapping);
+    }
+
+    String solveStep(){
+        counter++;
+        return "";
     }
 
     void brute_force_riddle(String[][] riddle){
@@ -43,33 +58,7 @@ public class Riddle {
 
         int i = 1;
         int j = 0;
-/*
-        while (i < numbers.length){
-            numbers[i] = numbers[i] - 1;
-            if (i % 2 != 0)
-                j = numbers[i];
-            else
-                j = 0;
 
-            // swap
-            char char_at_j = (char)  ('A' + j);
-            char char_at_i = (char)  ('A' + i);
-            int tmp = mapping.get(char_at_j);
-            mapping.put(char_at_j, mapping.get(char_at_i));
-            mapping.put(char_at_i, tmp);
-
-            if (is_solvable(mapping)) {
-                this.mapping = mapping;
-                return;
-            }
-
-            i = 1;
-            while (numbers[i] == 0) {
-                numbers[i] = i;
-                i++;
-            } // end while (p[i] is equal to 0)
-        } // end while (i < N)
-*/
         while (i < numbers.length){
             if (numbers[i] < i) {
                 j = i % 2 * numbers[i];
@@ -205,6 +194,7 @@ public class Riddle {
 
     int decodeNumber(String cypher, HashMap<Character, Integer> mapping){
         String s = "";
+
         for (char c: cypher.toCharArray()) {
             s += mapping.get(c);
         }
@@ -226,6 +216,17 @@ public class Riddle {
         return s;
     }
 
+    // data string for transport
+    String encodedRiddleToDataString(){
+        String s = "{\n";
+        s+= "\"server_id\" : \"" + server_id + "\",\n";
+        s+= "\"raetsel_id\" : \"" + id + "\",\n";
+        s+= encodedMatrixToString();
+        s+= "}";
+
+        return s;
+    }
+
     String decodeRiddle(){
         String s = "";
         for (int i = 0; i < 3; i++) {
@@ -243,33 +244,40 @@ public class Riddle {
     }
 
     void stringToRiddle(String riddleString){
-        Scanner scanner = new Scanner(riddleString);
-        int i = 0;
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (i % 2 == 0) {
-                String[] numbers = line.split(" \\+ ");
-                String number1 = numbers[0];
-                String number2 = numbers[1].split(" = ")[0];
-                String sum = numbers[1].split(" = ")[1];
-                encodedMatrix[i/2][0] = number1;
-                encodedMatrix[i/2][1] = number2;
-                encodedMatrix[i/2][2] = sum;
-            }
-            i++;
+        JSONObject obj = new JSONObject(riddleString);
+        id = obj.getInt("raetsel_id");
+        server_id = obj.getString("raetsel_id");
+
+        JSONArray arr = obj.getJSONArray("row1");
+        JSONArray arr2 = obj.getJSONArray("row2");
+        JSONArray arr3 = obj.getJSONArray("row3");
+        for (int i = 0; i < 3; i++) {
+            encodedMatrix[0][i] = arr.getString(i);
+            encodedMatrix[1][i] = arr2.getString(i);
+            encodedMatrix[2][i] = arr3.getString(i);
         }
-        scanner.close();
+    }
+
+    String encodedMatrixToString(){
+        String s = "";
+        for (int i = 0; i < 3; i++) {
+            s += "\"row" + (i+1) + "\" : [ \"";
+            s += encodedMatrix[i][0] + "\" , \"" +  encodedMatrix[i][1] + "\" , \"" + encodedMatrix[i][2];
+            if (i < 2)
+                s += "\" ],\n";
+            else
+                s += "\" ]\n";
+        }
+
+        return s;
     }
 
     String matrixToString(){
         String s = "";
         for (int i = 0; i < 3; i++) {
-            s += matrix[i][0] + " + " +  matrix[i][1] + " = " + matrix[i][2];
-            s += "\n";
-            if (i < 2){
-                s += " + " +  "    +   " + "  = ";
-                s += "\n";
-            }
+            s += "row" + (i+1) + " : [ ";
+            s += matrix[i][0] + " , " +  matrix[i][1] + " , " + matrix[i][2];
+            s += " ],\n";
         }
 
         return s;
