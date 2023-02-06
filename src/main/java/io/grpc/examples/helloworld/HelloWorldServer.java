@@ -34,7 +34,7 @@ public class HelloWorldServer {
 
   private Server server;
   public static HashMap<Integer, Riddle> riddles = new HashMap<Integer, Riddle>();
-  public static String server_id = "Biggus Dickus";
+  public static String server_id = "s4paneum";
 
   private void start() throws IOException {
     /* The port on which the server should run */
@@ -148,6 +148,7 @@ public class HelloWorldServer {
     @Override
     public void bruteRiddle(BruteRequest req, StreamObserver<BruteReply> responseObserver) {
       String riddleString = req.getName();
+      System.out.println(riddleString);
       Riddle riddle = new Riddle(server_id, counter);
       counter++;
       riddle.stringToRiddle(riddleString);
@@ -157,7 +158,24 @@ public class HelloWorldServer {
       System.out.println(riddle.decodeRiddle());
       System.out.println("--------------");
 
-      BruteReply reply = BruteReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
+      BruteReply reply = BruteReply.newBuilder().setMessage(riddle.decodedRiddleToDataString()).build();
+      responseObserver.onNext(reply);
+      responseObserver.onCompleted();
+    }
+
+    public void camelBruteRiddle(CamelBruteRequest req, StreamObserver<CamelBruteReply> responseObserver) {
+      String riddleString = req.getName();
+      System.out.println(riddleString);
+      Riddle riddle = new Riddle(server_id, counter);
+      counter++;
+      riddle.stringToRiddle(riddleString);
+      System.out.println(riddleString);
+      System.out.println("brute force solving...");
+      riddle.brute_force_riddle(riddle.encodedMatrix);
+      System.out.println(riddle.decodeRiddle());
+      System.out.println("--------------");
+
+      CamelBruteReply reply = CamelBruteReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }

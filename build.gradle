@@ -33,10 +33,16 @@ dependencies {
     implementation 'org.json:json:20220924'
     // https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3
     implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+    // https://mvnrepository.com/artifact/org.apache.camel/camel-paho
+    implementation group: 'org.apache.camel', name: 'camel-paho', version: '3.20.1'
+
     // https://mvnrepository.com/artifact/javax.inject/javax.inject
     implementation group: 'javax.inject', name: 'javax.inject', version: '1'
     // https://mvnrepository.com/artifact/org.apache.camel/camel-core
     implementation group: 'org.apache.camel', name: 'camel-core', version: '3.20.1'
+    // https://mvnrepository.com/artifact/org.apache.camel/camel-grpc
+    implementation group: 'org.apache.camel', name: 'camel-grpc', version: '3.20.1'
+
 
 
 

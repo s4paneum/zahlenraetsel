@@ -27,6 +27,7 @@ service Greeter {
   rpc RequestRiddle (RiddleRequest) returns (RiddleReply) {}
   rpc SolveRiddle (SolveRequest) returns (SolveReply) {}
   rpc BruteRiddle (BruteRequest) returns (BruteReply) {}
+  rpc CamelBruteRiddle (CamelBruteRequest) returns (CamelBruteReply) {}
 }
 
 // The request message containing the user's name.
@@ -60,5 +61,13 @@ message BruteRequest {
 }
 
 message BruteReply {
+  string message = 1;
+}
+
+message CamelBruteRequest {
+  string name = 1;
+}
+
+message CamelBruteReply {
   string message = 1;
 }
