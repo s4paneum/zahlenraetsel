@@ -1,27 +1,25 @@
 package io.grpc.examples.helloworld;
 
-import com.google.protobuf.Type;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class CamelClient extends org.apache.camel.builder.RouteBuilder {
-
-
 
     public CamelClient(){
 
     }
 
     public static void main(String[] args) {
+        // Testing purpose, can be deleted later
+        /*
+        Riddle riddle = new Riddle("t", 0);
+        riddle.generateRiddle();
+        riddle.brute_force_riddle(riddle.encodedMatrix);
+        System.out.println(riddle.decodedRiddleToDataString());
+         */
+
         CamelClient client = new CamelClient();
         CamelContext context = new DefaultCamelContext();
 
@@ -33,76 +31,47 @@ public class CamelClient extends org.apache.camel.builder.RouteBuilder {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
     public void configure() throws Exception {
-  /*      from("file://outputs?move=./done")
-                .process(new LogProcessor())
-                .bean(new Transformer(), "transformContent")
-                .to("file://camelOutputs");
-  */
         // getting Riddle from MQTT Server
 
-        String topic = "";
-        String brokerUrl =  "";
-        String userName = "";
-        String password = "";
+        String topic = "xxxx";
+        String topic2 = "xxxx";
+        String brokerUrl =  "xxxx";
+        String userName = "xxxx";
+        String password = "xxxx";
 
-        from("paho:" + topic + "?" + brokerUrl +"&userName=" + userName + "&password=" + password)
-                .process(new LogProcessor())
-                .to("file://outputs");
-
-        from("file://outputs?move=./done").process(new Processor() {
-            @Override
-            public void process(Exchange exchange) throws Exception {
-                Riddle riddle = new Riddle("s4paneum", 0);
-                riddle.stringToRiddle(exchange.getIn().getBody(String.class));
-                BruteRequest request = BruteRequest.newBuilder().setName(riddle.encodedRiddleToDataString()).build();
-                exchange.getIn().setBody(request, BruteRequest.class);
-            }
-        }).to("grpc://localhost:50051/io.grpc.examples.helloworld.Greeter?method=bruteRiddle&synchronous=true")
-                .bean(new Transformer(), "transformContent");
-
-
+        from("paho:" + topic + "?" + "brokerUrl=" + brokerUrl +"&userName=" + userName + "&password=" + password)
+                .process(new RiddleProcessor())
+                .to("grpc://localhost:50051/io.grpc.examples.helloworld.Greeter?method=bruteRiddle&synchronous=true")
+                .process(new FormatProcessor())
+                .to("paho:" + topic2 + "?" + "brokerUrl=" + brokerUrl +"&userName=" + userName + "&password=" + password);
     }
+    public  class FormatProcessor implements Processor{
 
-    public class Transformer {
-        public String transformContent(String body){
-            JSONObject obj = new JSONObject(body);
-            int id = obj.getInt("raetsel_id");
-            String server_id = obj.getString("server_id");
-            saveAsFile(server_id + "_" + id, body);
-            System.out.println(body);
-            return body;
+        @Override
+        public void process(Exchange exchange) throws Exception {
+            String result = exchange.getMessage().getBody(String.class)
+                    .replace("message: \"", "")
+                    .replace("}\"", "}")
+                    .replace("\\\"", "\"");
+            System.out.println(result);
+            exchange.getMessage().setBody(result, String.class);
         }
     }
-
-    public class LogProcessor implements Processor {
+    public class RiddleProcessor implements Processor {
         @Override
         public void process(Exchange exchange) throws Exception {
             System.out.println("Received from MQTT: ");
             System.out.println( exchange.getIn().getBody(String.class));
+            Riddle riddle = new Riddle("PatrickNeumann", 0);
+            riddle.stringToRiddle(exchange.getIn().getBody(String.class));
+            BruteRequest request = BruteRequest.newBuilder().setName(riddle.encodedRiddleToDataString()).build();
+            exchange.getIn().setBody(request, BruteRequest.class);
             System.out.println("---------------");
         }
-    }
-
-    public void saveAsFile(String filename, String input){
-        File directory = new File("camelOutputs");
-        if (! directory.exists()){
-            directory.mkdir();
-        }
-        String fileName = "camelOutputs/"+ filename + ".txt";
-
-        File f = new File(fileName);
-        FileWriter myWriter = null;
-        try {
-            myWriter = new FileWriter(fileName);
-            myWriter.write(input);
-            myWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
     }
 }

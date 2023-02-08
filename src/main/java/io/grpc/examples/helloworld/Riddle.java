@@ -16,6 +16,7 @@ public class Riddle {
     public int counter = 0;
     public int id;
     public String server_id;
+    public long time = 0;
 
     Riddle(String server_id, int id){
         this.server_id = server_id;
@@ -42,6 +43,7 @@ public class Riddle {
     }
 
     void brute_force_riddle(String[][] riddle){
+        long startTime = System.currentTimeMillis();
         // create mapping
         HashMap<Character, Integer> mapping = new HashMap<>();
         mapping.put('A', 0);
@@ -59,9 +61,18 @@ public class Riddle {
         int i = 1;
         int j = 0;
 
+        if (is_solvable(mapping)) {
+            this.mapping = mapping;
+            time = System.currentTimeMillis() - startTime;
+            return;
+        }
+
         while (i < numbers.length){
             if (numbers[i] < i) {
-                j = i % 2 * numbers[i];
+                if (i % 2 == 0)
+                    j = 0;
+                else
+                    j = numbers[i];
 
                 // swap
                 char char_at_j = (char)  ('A' + j);
@@ -72,6 +83,7 @@ public class Riddle {
 
                 if (is_solvable(mapping)) {
                     this.mapping = mapping;
+                    time = System.currentTimeMillis() - startTime;
                     return;
                 }
 
@@ -85,7 +97,7 @@ public class Riddle {
         } // end while (i < N)
 
     System.out.println("no solution found");
-
+    time = System.currentTimeMillis() - startTime;
     }
 
     private boolean is_solvable(HashMap<Character, Integer> map){
@@ -202,6 +214,7 @@ public class Riddle {
         return Integer.parseInt(s);
     }
 
+
     String riddleToString(){
         String s = "";
         for (int i = 0; i < 3; i++) {
@@ -228,13 +241,24 @@ public class Riddle {
     }
 
     String decodedRiddleToDataString(){
-        String s = "{\n";
-        s+= "\"server_id\" : \"" + server_id + "\",\n";
-        s+= "\"raetsel_id\" : \"" + id + "\",\n";
-        s+= decodedMatrixToString();
-        s+= "}";
+        JSONObject object = new JSONObject();
+        object.put("server_id", server_id);
+        object.put("raetsel_id", id);
 
-        return s;
+        for (int i = 0; i < 3; i++) {
+            JSONArray row = new JSONArray();
+            String rowName = "row" + (i+1);
+            object.put(rowName, row);
+
+            row.put(decodeNumber(encodedMatrix[i][0], mapping));
+            row.put(decodeNumber(encodedMatrix[i][1], mapping));
+            row.put(decodeNumber(encodedMatrix[i][2], mapping));
+        }
+
+        object.put("time", time);
+
+        object.toString();
+        return object.toString();
     }
 
     String decodeRiddle(){
@@ -285,14 +309,14 @@ public class Riddle {
     String decodedMatrixToString(){
         String s = "";
         for (int i = 0; i < 3; i++) {
-            s += "\"row" + (i+1) + "\" : [ \"";
+            s += "\"row" + (i+1) + "\" : [ ";
             s += decodeNumber(encodedMatrix[i][0], mapping)
-                    + "\" , \"" +  decodeNumber(encodedMatrix[i][1], mapping)
-                    + "\" , \"" + decodeNumber(encodedMatrix[i][2], mapping);
+                    + " , " +  decodeNumber(encodedMatrix[i][1], mapping)
+                    + " , " + decodeNumber(encodedMatrix[i][2], mapping);
             if (i < 2)
-                s += "\" ],\n";
+                s += " ],\n";
             else
-                s += "\" ]\n";
+                s += " ]\n";
         }
 
         return s;

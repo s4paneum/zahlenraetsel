@@ -29,12 +29,12 @@ import java.util.logging.Logger;
 /**
  * Server that manages startup/shutdown of a {@code Greeter} server.
  */
-public class HelloWorldServer {
+public class HelloWorldServer  extends org.apache.camel.builder.RouteBuilder {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
 
   private Server server;
   public static HashMap<Integer, Riddle> riddles = new HashMap<Integer, Riddle>();
-  public static String server_id = "s4paneum";
+  public static String server_id = "PatrickNeumann";
 
   private void start() throws IOException {
     /* The port on which the server should run */
@@ -81,6 +81,11 @@ public class HelloWorldServer {
     final HelloWorldServer server = new HelloWorldServer();
     server.start();
     server.blockUntilShutdown();
+  }
+
+  @Override
+  public void configure() throws Exception {
+
   }
 
   static class GreeterImpl extends GreeterGrpc.GreeterImplBase {
@@ -174,6 +179,15 @@ public class HelloWorldServer {
       riddle.brute_force_riddle(riddle.encodedMatrix);
       System.out.println(riddle.decodeRiddle());
       System.out.println("--------------");
+
+      String result = riddle.decodedRiddleToDataString();
+
+      String topic = "Loesung";
+      String brokerUrl =  "brokerUrl=tcp://marvin.syssoft.uni-trier.de:5042";
+      String userName = "sa4e";
+      String password = "wynrgcHUXL9UHwfkc4-K";
+
+
 
       CamelBruteReply reply = CamelBruteReply.newBuilder().setMessage(riddle.decodeRiddle()).build();
       responseObserver.onNext(reply);
