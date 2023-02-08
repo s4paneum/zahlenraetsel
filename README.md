@@ -1,17 +1,19 @@
 Install:
 - move to project folder and type ./gradlew installDir in console
-- move into build\install\examples\bin and execute riddle-server.bat and start it
-- execute riddle-client.bat
+- move into build\install\examples\bin and start riddle-server.bat
 
-Client Command List:
-- !help
-- !requestRiddle
-- !showRiddle
-- !solveRiddle
-- !setOutput x
-- !stopSolve
-- !bruteRiddle
+Riddle Client:
+a client that can generate Riddles and solve Riddles via text input.
+
+ CommandList:
+  - !help
+  - !requestRiddle
+  - !showRiddle
+  - !solveRiddle
+  - !setOutput x
+  - !stopSolve
+  - !bruteRiddle
 
 Camel Client:
-- moves output files from riddle client and transforms it
-- execute camel-client.bat
+connects to a mqtt server to get Riddles (broker Url has to be set in CamelClient.java!!!)
+solve the riddle and sends it back to mqtt via camel
